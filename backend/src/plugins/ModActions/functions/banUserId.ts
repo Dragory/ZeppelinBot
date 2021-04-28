@@ -97,6 +97,17 @@ export async function banUserId(
     };
   }
 
+  if (pluginData.config.get().delete_invites_on_ban) {
+    const userInvites = (await pluginData.guild.getInvites()).filter(inv => inv.inviter?.id === user.id);
+    userInvites.forEach(invite => {
+      try {
+        invite.delete("User banned from server");
+      } catch (e) {
+        pluginData.state.serverLogs.log(LogType.BOT_ALERT, `Error deleting invite \`${invite.code}\`: ${e}`);
+      }
+    });
+  }
+
   // Create a case for this action
   const modId = banOptions.caseArgs?.modId || pluginData.client.user.id;
   const casesPlugin = pluginData.getPlugin(CasesPlugin);
