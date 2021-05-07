@@ -14,7 +14,7 @@ const opts = {
 
 export const UnbanCmd = modActionsCmd({
   trigger: "unban",
-  permission: "can_ban",
+  permission: "can_unban",
   description: "Unban the specified member",
 
   signature: [
@@ -50,7 +50,7 @@ export const UnbanCmd = modActionsCmd({
     try {
       ignoreEvent(pluginData, IgnoredEventType.Unban, user.id);
       await pluginData.guild.unbanMember(user.id, reason != null ? encodeURIComponent(reason) : undefined);
-    } catch (e) {
+    } catch {
       sendErrorMessage(pluginData, msg.channel, "Failed to unban member; are you sure they're banned?");
       return;
     }
