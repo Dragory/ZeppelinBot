@@ -8,7 +8,9 @@ export const RunAutomodOnVoiceLeave = guildEventListener<AutomodPluginType>()(
     const context: AutomodContext = {
       member,
       timestamp: Date.now(),
-      voiceChannel: oldChannel,
+      voiceChannel: {
+        left: oldChannel,
+      },
       user: member.user,
     };
 

@@ -127,7 +127,10 @@ export interface AutomodContext {
   antiraid?: {
     level: string | null;
   };
-  voiceChannel?: VoiceChannel;
+  voiceChannel?: {
+    joined?: VoiceChannel;
+    left?: VoiceChannel;
+  };
 }
 
 export interface RecentAction {

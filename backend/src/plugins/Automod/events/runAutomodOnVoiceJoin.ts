@@ -8,7 +8,9 @@ export const RunAutomodOnVoiceJoin = guildEventListener<AutomodPluginType>()(
     const context: AutomodContext = {
       member,
       timestamp: Date.now(),
-      voiceChannel: newChannel,
+      voiceChannel: {
+        joined: newChannel,
+      },
       user: member.user,
     };
 
