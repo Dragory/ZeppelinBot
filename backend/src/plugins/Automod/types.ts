@@ -1,10 +1,10 @@
 import * as t from "io-ts";
-import { tNullable, UnknownUser } from "../../utils";
+import { tNullable } from "../../utils";
 import { BasePluginType, CooldownManager } from "knub";
 import { GuildSavedMessages } from "../../data/GuildSavedMessages";
 import { GuildLogs } from "../../data/GuildLogs";
 import { SavedMessage } from "../../data/entities/SavedMessage";
-import { Member, User } from "eris";
+import { Member, User, VoiceChannel } from "eris";
 import { AvailableTriggers } from "./triggers/availableTriggers";
 import { AvailableActions } from "./actions/availableActions";
 import { Queue } from "../../Queue";
@@ -16,7 +16,6 @@ import { RegExpRunner } from "../../RegExpRunner";
 import { CounterEvents } from "../Counters/types";
 import { ModActionsEvents, ModActionType } from "../ModActions/types";
 import { MutesEvents } from "../Mutes/types";
-import Eris = require("eris");
 
 export const Rule = t.type({
   enabled: t.boolean,
@@ -128,7 +127,7 @@ export interface AutomodContext {
   antiraid?: {
     level: string | null;
   };
-  voiceChannel?: Eris.VoiceChannel;
+  voiceChannel?: VoiceChannel;
 }
 
 export interface RecentAction {
