@@ -25,6 +25,7 @@ export interface ZeppelinGuildPluginBlueprint<TPluginData extends GuildPluginDat
     description?: TMarkdown;
     usageGuide?: TMarkdown;
     configurationGuide?: TMarkdown;
+    legacy?: boolean;
   };
 }
 

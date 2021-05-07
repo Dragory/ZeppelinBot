@@ -51,6 +51,7 @@ export const CensorPlugin = zeppelinGuildPlugin<CensorPluginType>()("censor", {
       Censor words, tokens, links, regex, etc.
       For more advanced filtering, check out the Automod plugin!
     `),
+    legacy: true,
   },
 
   dependencies: [LogsPlugin],
