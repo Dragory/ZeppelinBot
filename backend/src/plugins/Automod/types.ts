@@ -16,6 +16,7 @@ import { RegExpRunner } from "../../RegExpRunner";
 import { CounterEvents } from "../Counters/types";
 import { ModActionsEvents, ModActionType } from "../ModActions/types";
 import { MutesEvents } from "../Mutes/types";
+import Eris = require("eris");
 
 export const Rule = t.type({
   enabled: t.boolean,
@@ -127,6 +128,7 @@ export interface AutomodContext {
   antiraid?: {
     level: string | null;
   };
+  voiceChannel?: Eris.VoiceChannel;
 }
 
 export interface RecentAction {

@@ -11,7 +11,7 @@ import { StrictValidationError } from "../../validatorUtils";
 import { ConfigPreprocessorFn } from "knub/dist/config/configTypes";
 import { availableActions } from "./actions/availableActions";
 import { clearOldRecentActions } from "./functions/clearOldRecentActions";
-import { disableCodeBlocks, MINUTES, SECONDS } from "../../utils";
+import { MINUTES, SECONDS } from "../../utils";
 import { clearOldRecentSpam } from "./functions/clearOldRecentSpam";
 import { GuildAntiraidLevels } from "../../data/GuildAntiraidLevels";
 import { GuildArchives } from "../../data/GuildArchives";
@@ -23,9 +23,6 @@ import { AntiraidClearCmd } from "./commands/AntiraidClearCmd";
 import { SetAntiraidCmd } from "./commands/SetAntiraidCmd";
 import { ViewAntiraidCmd } from "./commands/ViewAntiraidCmd";
 import { pluginInfo } from "./info";
-import { RegExpRunner } from "../../RegExpRunner";
-import { LogType } from "../../data/LogType";
-import { logger } from "../../logger";
 import { discardRegExpRunner, getRegExpRunner } from "../../regExpRunners";
 import { RunAutomodOnMemberUpdate } from "./events/RunAutomodOnMemberUpdate";
 import { CountersPlugin } from "../Counters/CountersPlugin";
@@ -33,6 +30,8 @@ import { runAutomodOnCounterTrigger } from "./events/runAutomodOnCounterTrigger"
 import { runAutomodOnModAction } from "./events/runAutomodOnModAction";
 import { registerEventListenersFromMap } from "../../utils/registerEventListenersFromMap";
 import { unregisterEventListenersFromMap } from "../../utils/unregisterEventListenersFromMap";
+import { RunAutomodOnVoiceJoin } from "./events/runAutomodOnVoiceJoin";
+import { RunAutomodOnVoiceLeave } from "./events/runAutomodOnVoiceLeave";
 
 const defaultOptions = {
   config: {
@@ -172,10 +171,11 @@ export const AutomodPlugin = zeppelinGuildPlugin<AutomodPluginType>()("automod",
     return criteria?.antiraid_level ? criteria.antiraid_level === pluginData.state.cachedAntiraidLevel : false;
   },
 
-  // prettier-ignore
   events: [
     RunAutomodOnJoinEvt,
     RunAutomodOnMemberUpdate,
+    RunAutomodOnVoiceJoin,
+    RunAutomodOnVoiceLeave,
     // Messages use message events from SavedMessages, see onLoad below
   ],
 
