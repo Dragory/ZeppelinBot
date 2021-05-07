@@ -20,7 +20,7 @@ export const NicknameResetCmd = utilityCmd({
     }
 
     if (!args.member.nick) {
-      msg.channel.createMessage(errorMessage("User does not have a nickname"));
+      msg.channel.createMessage(errorMessage(`<@!${args.member.id}> does not have a nickname`));
       return;
     }
 
