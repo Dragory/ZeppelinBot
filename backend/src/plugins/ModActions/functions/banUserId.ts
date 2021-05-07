@@ -77,6 +77,10 @@ export async function banUserId(
   ignoreEvent(pluginData, IgnoredEventType.Ban, userId);
   try {
     const deleteMessageDays = Math.min(30, Math.max(0, banOptions.deleteMessageDays ?? 1));
+    // Trim down reason to 490 words, API limit is 512 and we leave a gap to accomodate cross-ban bots
+    if (reason && reason.length >= 490) {
+      reason = reason.substring(0, 200) + "...";
+    }
     await pluginData.guild.banMember(
       userId,
       deleteMessageDays,
