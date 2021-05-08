@@ -1,6 +1,6 @@
 import { zeppelinGuildPlugin } from "../ZeppelinPluginBlueprint";
 import { AutomodPluginType, ConfigSchema } from "./types";
-import { RunAutomodOnJoinEvt } from "./events/RunAutomodOnJoinEvt";
+import { RunAutomodOnJoinEvt } from "./events/runAutomodOnJoinEvt";
 import { GuildLogs } from "../../data/GuildLogs";
 import { GuildSavedMessages } from "../../data/GuildSavedMessages";
 import { runAutomodOnMessage } from "./events/runAutomodOnMessage";
@@ -24,7 +24,7 @@ import { SetAntiraidCmd } from "./commands/SetAntiraidCmd";
 import { ViewAntiraidCmd } from "./commands/ViewAntiraidCmd";
 import { pluginInfo } from "./info";
 import { discardRegExpRunner, getRegExpRunner } from "../../regExpRunners";
-import { RunAutomodOnMemberUpdate } from "./events/RunAutomodOnMemberUpdate";
+import { RunAutomodOnMemberUpdate } from "./events/runAutomodOnMemberUpdate";
 import { CountersPlugin } from "../Counters/CountersPlugin";
 import { runAutomodOnCounterTrigger } from "./events/runAutomodOnCounterTrigger";
 import { runAutomodOnModAction } from "./events/runAutomodOnModAction";
