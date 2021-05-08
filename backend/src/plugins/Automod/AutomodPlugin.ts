@@ -30,9 +30,11 @@ import { runAutomodOnCounterTrigger } from "./events/runAutomodOnCounterTrigger"
 import { runAutomodOnModAction } from "./events/runAutomodOnModAction";
 import { registerEventListenersFromMap } from "../../utils/registerEventListenersFromMap";
 import { unregisterEventListenersFromMap } from "../../utils/unregisterEventListenersFromMap";
-import { RunAutomodOnVoiceJoin } from "./events/runAutomodOnVoiceJoin";
-import { RunAutomodOnVoiceLeave } from "./events/runAutomodOnVoiceLeave";
-import { RunAutomodOnVoiceSwitch } from "./events/runAutomodOnVoiceSwitch";
+import {
+  RunAutomodOnVoiceJoin,
+  RunAutomodOnVoiceLeave,
+  RunAutomodOnVoiceSwitch,
+} from "./events/runAutomodOnVoiceEvents";
 
 const defaultOptions = {
   config: {
