@@ -32,6 +32,7 @@ import { registerEventListenersFromMap } from "../../utils/registerEventListener
 import { unregisterEventListenersFromMap } from "../../utils/unregisterEventListenersFromMap";
 import { RunAutomodOnVoiceJoin } from "./events/runAutomodOnVoiceJoin";
 import { RunAutomodOnVoiceLeave } from "./events/runAutomodOnVoiceLeave";
+import { RunAutomodOnVoiceSwitch } from "./events/runAutomodOnVoiceSwitch";
 
 const defaultOptions = {
   config: {
@@ -176,6 +177,7 @@ export const AutomodPlugin = zeppelinGuildPlugin<AutomodPluginType>()("automod",
     RunAutomodOnMemberUpdate,
     RunAutomodOnVoiceJoin,
     RunAutomodOnVoiceLeave,
+    RunAutomodOnVoiceSwitch,
     // Messages use message events from SavedMessages, see onLoad below
   ],
 

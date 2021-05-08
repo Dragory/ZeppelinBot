@@ -29,6 +29,7 @@ import { AnyMessageTrigger } from "./anyMessage";
 import { AntiraidLevelTrigger } from "./antiraidLevel";
 import { JoinVoiceChannelTrigger } from "./joinVoiceChannel";
 import { LeaveVoiceChannelTrigger } from "./leaveVoiceChannel";
+import { MoveVoiceChannelTrigger } from "./moveVoiceChannel";
 
 export const availableTriggers: Record<string, AutomodTriggerBlueprint<any, any>> = {
   any_message: AnyMessageTrigger,
@@ -64,6 +65,7 @@ export const availableTriggers: Record<string, AutomodTriggerBlueprint<any, any>
 
   join_voice_channel: JoinVoiceChannelTrigger,
   leave_voice_channel: LeaveVoiceChannelTrigger,
+  move_voice_channel: MoveVoiceChannelTrigger,
 
   antiraid_level: AntiraidLevelTrigger,
 };
@@ -102,6 +104,7 @@ export const AvailableTriggers = t.type({
 
   join_voice_channel: JoinVoiceChannelTrigger.configType,
   leave_voice_channel: LeaveVoiceChannelTrigger.configType,
+  move_voice_channel: MoveVoiceChannelTrigger.configType,
 
   antiraid_level: AntiraidLevelTrigger.configType,
 });
