@@ -13,14 +13,12 @@ export const MoveVoiceChannelTrigger = automodTrigger<MoveVoiceChannelResult>()(
     new_channel: t.union([t.string, t.array(t.string)]),
   }),
 
-  defaultConfig: {
-    old_channel: "",
-    new_channel: "",
-  },
+  defaultConfig: {},
 
   async match({ triggerConfig, context }) {
     const oldChannelId = context.voiceChannel?.left?.id;
     const newChannelId = context.voiceChannel?.joined?.id;
+
     if (!context.member || !oldChannelId || !newChannelId) {
       return;
     }
