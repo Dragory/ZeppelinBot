@@ -27,6 +27,9 @@ import { BanTrigger } from "./ban";
 import { UnbanTrigger } from "./unban";
 import { AnyMessageTrigger } from "./anyMessage";
 import { AntiraidLevelTrigger } from "./antiraidLevel";
+import { JoinVoiceChannelTrigger } from "./joinVoiceChannel";
+import { LeaveVoiceChannelTrigger } from "./leaveVoiceChannel";
+import { MoveVoiceChannelTrigger } from "./moveVoiceChannel";
 
 export const availableTriggers: Record<string, AutomodTriggerBlueprint<any, any>> = {
   any_message: AnyMessageTrigger,
@@ -59,6 +62,10 @@ export const availableTriggers: Record<string, AutomodTriggerBlueprint<any, any>
   kick: KickTrigger,
   ban: BanTrigger,
   unban: UnbanTrigger,
+
+  join_voice_channel: JoinVoiceChannelTrigger,
+  leave_voice_channel: LeaveVoiceChannelTrigger,
+  move_voice_channel: MoveVoiceChannelTrigger,
 
   antiraid_level: AntiraidLevelTrigger,
 };
@@ -94,6 +101,10 @@ export const AvailableTriggers = t.type({
   kick: KickTrigger.configType,
   ban: BanTrigger.configType,
   unban: UnbanTrigger.configType,
+
+  join_voice_channel: JoinVoiceChannelTrigger.configType,
+  leave_voice_channel: LeaveVoiceChannelTrigger.configType,
+  move_voice_channel: MoveVoiceChannelTrigger.configType,
 
   antiraid_level: AntiraidLevelTrigger.configType,
 });

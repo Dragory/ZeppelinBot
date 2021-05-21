@@ -1,10 +1,10 @@
 import * as t from "io-ts";
-import { tNullable, UnknownUser } from "../../utils";
+import { tNullable } from "../../utils";
 import { BasePluginType, CooldownManager } from "knub";
 import { GuildSavedMessages } from "../../data/GuildSavedMessages";
 import { GuildLogs } from "../../data/GuildLogs";
 import { SavedMessage } from "../../data/entities/SavedMessage";
-import { Member, User } from "eris";
+import { Member, User, VoiceChannel } from "eris";
 import { AvailableTriggers } from "./triggers/availableTriggers";
 import { AvailableActions } from "./actions/availableActions";
 import { Queue } from "../../Queue";
@@ -126,6 +126,10 @@ export interface AutomodContext {
   };
   antiraid?: {
     level: string | null;
+  };
+  voiceChannel?: {
+    joined?: VoiceChannel;
+    left?: VoiceChannel;
   };
 }
 
