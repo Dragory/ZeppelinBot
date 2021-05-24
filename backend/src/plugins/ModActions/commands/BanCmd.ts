@@ -123,18 +123,7 @@ export const BanCmd = modActionsCmd({
           return;
         }
       } else {
-        // Ask the mod if we should upgrade to a forceban as the user is not on the server
-        const notOnServerMsg = await msg.channel.createMessage("User not found on the server, forceban instead?");
-        const reply = await waitForReaction(pluginData.client, notOnServerMsg, ["✅", "❌"], msg.author.id);
-
-        notOnServerMsg.delete().catch(noop);
-        if (!reply || reply.name === "❌") {
-          sendErrorMessage(pluginData, msg.channel, "User not on server, ban cancelled by moderator");
-          lock.unlock();
-          return;
-        } else {
-          forceban = true;
-        }
+        forceban = true;
       }
     }
 
