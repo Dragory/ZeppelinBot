@@ -745,6 +745,17 @@ export function disableCodeBlocks(content: string): string {
   return content.replace(/`/g, "`\u200b");
 }
 
+/**
+ * Disable bold in the given string by escaping the asterisks
+ */
+export function disableBold(content: string): string {
+  let i = 0;
+  return content.replace(/\*\*(\*)?/g, (_, match) => {
+    if (match) return ++i % 2 ? `${match}\\*\\*` : `\\*\\*${match}`;
+    return "\\*\\*";
+  });
+}
+
 export function useMediaUrls(content: string): string {
   return content.replace(/cdn\.discord(app)?\.com/g, "media.discordapp.net");
 }

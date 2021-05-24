@@ -1,6 +1,6 @@
 import { utilityCmd } from "../types";
 import { commandTypeHelpers as ct } from "../../../commandTypes";
-import { errorMessage } from "../../../utils";
+import { disableBold, errorMessage } from "../../../utils";
 import { canActOn, sendSuccessMessage } from "../../../pluginUtils";
 
 export const NicknameCmd = utilityCmd({
@@ -11,10 +11,19 @@ export const NicknameCmd = utilityCmd({
 
   signature: {
     member: ct.resolvedMember(),
-    nickname: ct.string({ catchAll: true }),
+    nickname: ct.string({ catchAll: true, required: false }),
   },
 
   async run({ message: msg, args, pluginData }) {
+    if (!args.nickname) {
+      if (!args.member.nick) {
+        msg.channel.createMessage(`<@!${args.member.id}> does not have a nickname`);
+      } else {
+        msg.channel.createMessage(`The nickname of <@!${args.member.id}> is **${disableBold(args.nickname)}**`);
+      }
+      return;
+    }
+
     if (msg.member.id !== args.member.id && !canActOn(pluginData, msg.member, args.member)) {
       msg.channel.createMessage(errorMessage("Cannot change nickname: insufficient permissions"));
       return;
