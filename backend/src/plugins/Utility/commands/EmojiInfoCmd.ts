@@ -1,8 +1,8 @@
 import { utilityCmd } from "../types";
 import { commandTypeHelpers as ct } from "../../../commandTypes";
 import { sendErrorMessage } from "../../../pluginUtils";
-import { customEmojiRegex } from "../../../utils";
 import { getEmojiInfoEmbed } from "../functions/getEmojiInfoEmbed";
+import { getCustomEmojiId } from "../functions/getCustomEmojiId";
 
 export const EmojiInfoCmd = utilityCmd({
   trigger: ["emoji", "emojiinfo"],
@@ -15,13 +15,13 @@ export const EmojiInfoCmd = utilityCmd({
   },
 
   async run({ message, args, pluginData }) {
-    const emojiIdMatch = args.emoji.match(customEmojiRegex);
-    if (!emojiIdMatch?.[2]) {
+    const emojiId = getCustomEmojiId(args.emoji);
+    if (!emojiId) {
       sendErrorMessage(pluginData, message.channel, "Emoji not found");
       return;
     }
 
-    const embed = await getEmojiInfoEmbed(pluginData, emojiIdMatch[2]);
+    const embed = await getEmojiInfoEmbed(pluginData, emojiId);
     if (!embed) {
       sendErrorMessage(pluginData, message.channel, "Emoji not found");
       return;
