@@ -1,14 +1,13 @@
-import { modActionsCmd } from "../types";
+import { MessageEmbedOptions, User } from "discord.js";
 import { commandTypeHelpers as ct } from "../../../commandTypes";
 import { sendErrorMessage } from "../../../pluginUtils";
-import { trimLines, createChunkedMessage, emptyEmbedValue, sorter, resolveUser } from "../../../utils";
-import { CasesPlugin } from "../../Cases/CasesPlugin";
+import { emptyEmbedValue, resolveUser, trimLines } from "../../../utils";
 import { asyncMap } from "../../../utils/async";
-import { EmbedOptions, User } from "eris";
-import { getChunkedEmbedFields } from "../../../utils/getChunkedEmbedFields";
-import { getDefaultPrefix } from "knub/dist/commands/commandUtils";
-import { getGuildPrefix } from "../../../utils/getGuildPrefix";
 import { createPaginatedMessage } from "../../../utils/createPaginatedMessage";
+import { getChunkedEmbedFields } from "../../../utils/getChunkedEmbedFields";
+import { getGuildPrefix } from "../../../utils/getGuildPrefix";
+import { CasesPlugin } from "../../Cases/CasesPlugin";
+import { modActionsCmd } from "../types";
 
 const opts = {
   mod: ct.userId({ option: true }),
@@ -55,10 +54,10 @@ export const CasesModCmd = modActionsCmd({
         const lastCaseNum = page * casesPerPage;
         const title = `Most recent cases ${firstCaseNum}-${lastCaseNum} of ${totalCases} by ${modName}`;
 
-        const embed: EmbedOptions = {
+        const embed: MessageEmbedOptions = {
           author: {
             name: title,
-            icon_url: mod instanceof User ? mod.avatarURL || mod.defaultAvatarURL : undefined,
+            iconURL: mod instanceof User ? mod.avatarURL() || mod.defaultAvatarURL : undefined,
           },
           fields: [
             ...getChunkedEmbedFields(emptyEmbedValue, lines.join("\n")),
@@ -72,7 +71,7 @@ export const CasesModCmd = modActionsCmd({
           ],
         };
 
-        return { embed };
+        return { embeds: [embed] };
       },
       {
         limitToUserId: msg.author.id,

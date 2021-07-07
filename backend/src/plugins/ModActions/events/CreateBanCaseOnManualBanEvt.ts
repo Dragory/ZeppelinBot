@@ -1,13 +1,13 @@
-import { IgnoredEventType, modActionsEvt } from "../types";
-import { isEventIgnored } from "../functions/isEventIgnored";
-import { clearIgnoredEvents } from "../functions/clearIgnoredEvents";
-import { Constants as ErisConstants, User } from "eris";
-import { CasesPlugin } from "../../Cases/CasesPlugin";
+import { GuildAuditLogs, User } from "discord.js";
 import { CaseTypes } from "../../../data/CaseTypes";
-import { safeFindRelevantAuditLogEntry } from "../../../utils/safeFindRelevantAuditLogEntry";
-import { LogType } from "../../../data/LogType";
-import { stripObjectToScalars, resolveUser, UnknownUser } from "../../../utils";
 import { Case } from "../../../data/entities/Case";
+import { LogType } from "../../../data/LogType";
+import { resolveUser, stripObjectToScalars, UnknownUser } from "../../../utils";
+import { safeFindRelevantAuditLogEntry } from "../../../utils/safeFindRelevantAuditLogEntry";
+import { CasesPlugin } from "../../Cases/CasesPlugin";
+import { clearIgnoredEvents } from "../functions/clearIgnoredEvents";
+import { isEventIgnored } from "../functions/isEventIgnored";
+import { IgnoredEventType, modActionsEvt } from "../types";
 
 /**
  * Create a BAN case automatically when a user is banned manually.
@@ -15,7 +15,8 @@ import { Case } from "../../../data/entities/Case";
  */
 export const CreateBanCaseOnManualBanEvt = modActionsEvt({
   event: "guildBanAdd",
-  async listener({ pluginData, args: { guild, user } }) {
+  async listener({ pluginData, args: { ban } }) {
+    const user = ban.user;
     if (isEventIgnored(pluginData, IgnoredEventType.Ban, user.id)) {
       clearIgnoredEvents(pluginData, IgnoredEventType.Ban, user.id);
       return;
@@ -23,7 +24,7 @@ export const CreateBanCaseOnManualBanEvt = modActionsEvt({
 
     const relevantAuditLogEntry = await safeFindRelevantAuditLogEntry(
       pluginData,
-      ErisConstants.AuditLogActions.MEMBER_BAN_ADD,
+      GuildAuditLogs.Actions.MEMBER_BAN_ADD as number,
       user.id,
     );
 
@@ -34,7 +35,7 @@ export const CreateBanCaseOnManualBanEvt = modActionsEvt({
     let reason = "";
 
     if (relevantAuditLogEntry) {
-      const modId = relevantAuditLogEntry.user.id;
+      const modId = relevantAuditLogEntry.executor!.id;
       const auditLogId = relevantAuditLogEntry.id;
 
       mod = await resolveUser(pluginData.client, modId);

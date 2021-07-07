@@ -1,20 +1,20 @@
-import { SavedMessage } from "../../../data/entities/SavedMessage";
-import { Attachment } from "eris";
-import { useMediaUrls, stripObjectToScalars, resolveUser } from "../../../utils";
-import { LogType } from "../../../data/LogType";
-import moment from "moment-timezone";
+import { MessageAttachment, Snowflake } from "discord.js";
 import { GuildPluginData } from "knub";
-import { FORMAT_NO_TIMESTAMP, LogsPluginType } from "../types";
+import moment from "moment-timezone";
+import { SavedMessage } from "../../../data/entities/SavedMessage";
+import { LogType } from "../../../data/LogType";
+import { resolveUser, stripObjectToScalars, useMediaUrls } from "../../../utils";
 import { TimeAndDatePlugin } from "../../TimeAndDate/TimeAndDatePlugin";
+import { FORMAT_NO_TIMESTAMP, LogsPluginType } from "../types";
 
 export async function onMessageDelete(pluginData: GuildPluginData<LogsPluginType>, savedMessage: SavedMessage) {
   const user = await resolveUser(pluginData.client, savedMessage.user_id);
-  const channel = pluginData.guild.channels.get(savedMessage.channel_id);
+  const channel = pluginData.guild.channels.cache.get(savedMessage.channel_id as Snowflake);
 
   if (user) {
     // Replace attachment URLs with media URLs
     if (savedMessage.data.attachments) {
-      for (const attachment of savedMessage.data.attachments as Attachment[]) {
+      for (const attachment of savedMessage.data.attachments as MessageAttachment[]) {
         attachment.url = useMediaUrls(attachment.url);
       }
     }

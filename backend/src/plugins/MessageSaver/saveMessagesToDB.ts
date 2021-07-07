@@ -1,6 +1,6 @@
-import { MessageSaverPluginType } from "./types";
+import { Message, Snowflake, TextChannel } from "discord.js";
 import { GuildPluginData } from "knub";
-import { Message, TextChannel } from "eris";
+import { MessageSaverPluginType } from "./types";
 
 export async function saveMessagesToDB(
   pluginData: GuildPluginData<MessageSaverPluginType>,
@@ -15,7 +15,7 @@ export async function saveMessagesToDB(
     let thisMsg: Message;
 
     try {
-      thisMsg = await channel.getMessage(id);
+      thisMsg = await channel.messages.fetch(id as Snowflake);
 
       if (!thisMsg) {
         failed.push(id);

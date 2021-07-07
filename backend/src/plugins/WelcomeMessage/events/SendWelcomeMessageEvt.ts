@@ -1,9 +1,9 @@
-import { welcomeMessageEvt } from "../types";
+import { Snowflake, TextChannel } from "discord.js";
+import { LogType } from "../../../data/LogType";
 import { renderTemplate, TemplateParseError } from "../../../templateFormatter";
 import { createChunkedMessage, stripObjectToScalars } from "../../../utils";
-import { LogType } from "../../../data/LogType";
-import { TextChannel } from "eris";
 import { sendDM } from "../../../utils/sendDM";
+import { welcomeMessageEvt } from "../types";
 
 export const SendWelcomeMessageEvt = welcomeMessageEvt({
   event: "guildMemberAdd",
@@ -55,7 +55,7 @@ export const SendWelcomeMessageEvt = welcomeMessageEvt({
     }
 
     if (config.send_to_channel) {
-      const channel = meta.args.guild.channels.get(config.send_to_channel);
+      const channel = meta.args.member.guild.channels.cache.get(config.send_to_channel as Snowflake);
       if (!channel || !(channel instanceof TextChannel)) return;
 
       try {

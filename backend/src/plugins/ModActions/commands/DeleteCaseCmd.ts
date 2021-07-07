@@ -1,15 +1,14 @@
-import { modActionsCmd } from "../types";
-import { commandTypeHelpers as ct } from "../../../commandTypes";
-import { sendErrorMessage, sendSuccessMessage } from "../../../pluginUtils";
+import { TextChannel } from "discord.js";
 import { helpers } from "knub";
-import { CasesPlugin } from "../../Cases/CasesPlugin";
-import { TextChannel } from "eris";
-import { SECONDS, stripObjectToScalars, trimLines } from "../../../utils";
-import { LogsPlugin } from "../../Logs/LogsPlugin";
-import { LogType } from "../../../data/LogType";
-import moment from "moment-timezone";
-import { TimeAndDatePlugin } from "../../TimeAndDate/TimeAndDatePlugin";
+import { commandTypeHelpers as ct } from "../../../commandTypes";
 import { Case } from "../../../data/entities/Case";
+import { LogType } from "../../../data/LogType";
+import { sendErrorMessage, sendSuccessMessage } from "../../../pluginUtils";
+import { SECONDS, stripObjectToScalars, trimLines } from "../../../utils";
+import { CasesPlugin } from "../../Cases/CasesPlugin";
+import { LogsPlugin } from "../../Logs/LogsPlugin";
+import { TimeAndDatePlugin } from "../../TimeAndDate/TimeAndDatePlugin";
+import { modActionsCmd } from "../types";
 
 export const DeleteCaseCmd = modActionsCmd({
   trigger: ["delete_case", "deletecase"],
@@ -22,7 +21,7 @@ export const DeleteCaseCmd = modActionsCmd({
   signature: {
     caseNumber: ct.number({ rest: true }),
 
-    force: ct.switchOption({ shortcut: "f" }),
+    force: ct.switchOption({ def: false, shortcut: "f" }),
   },
 
   async run({ pluginData, message, args }) {
@@ -49,9 +48,9 @@ export const DeleteCaseCmd = modActionsCmd({
       if (!args.force) {
         const cases = pluginData.getPlugin(CasesPlugin);
         const embedContent = await cases.getCaseEmbed(theCase);
-        message.channel.createMessage({
+        message.channel.send({
+          ...embedContent,
           content: "Delete the following case? Answer 'Yes' to continue, 'No' to cancel.",
-          embed: embedContent.embed,
         });
 
         const reply = await helpers.waitForReply(
@@ -62,7 +61,7 @@ export const DeleteCaseCmd = modActionsCmd({
         );
         const normalizedReply = (reply?.content || "").toLowerCase().trim();
         if (normalizedReply !== "yes" && normalizedReply !== "y") {
-          message.channel.createMessage("Cancelled. Case was not deleted.");
+          message.channel.send("Cancelled. Case was not deleted.");
           cancelled++;
           continue;
         }

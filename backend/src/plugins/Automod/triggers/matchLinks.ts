@@ -1,18 +1,11 @@
-import * as t from "io-ts";
 import escapeStringRegexp from "escape-string-regexp";
-import { automodTrigger } from "../helpers";
-import {
-  asSingleLine,
-  disableCodeBlocks,
-  disableInlineCode,
-  getUrlsInString,
-  tNullable,
-  verboseChannelMention,
-} from "../../../utils";
-import { MatchableTextType, matchMultipleTextTypesOnMessage } from "../functions/matchMultipleTextTypesOnMessage";
+import * as t from "io-ts";
+import { allowTimeout } from "../../../RegExpRunner";
+import { disableInlineCode, getUrlsInString, tNullable } from "../../../utils";
 import { TRegex } from "../../../validatorUtils";
 import { getTextMatchPartialSummary } from "../functions/getTextMatchPartialSummary";
-import { allowTimeout } from "../../../RegExpRunner";
+import { MatchableTextType, matchMultipleTextTypesOnMessage } from "../functions/matchMultipleTextTypesOnMessage";
+import { automodTrigger } from "../helpers";
 
 interface MatchResultType {
   type: MatchableTextType;

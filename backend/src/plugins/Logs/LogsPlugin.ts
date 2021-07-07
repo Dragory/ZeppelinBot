@@ -1,28 +1,34 @@
-import { zeppelinGuildPlugin } from "../ZeppelinPluginBlueprint";
 import { PluginOptions } from "knub";
-import { ConfigSchema, FORMAT_NO_TIMESTAMP, LogsPluginType } from "./types";
 import DefaultLogMessages from "../../data/DefaultLogMessages.json";
-import { GuildLogs } from "../../data/GuildLogs";
-import { GuildSavedMessages } from "../../data/GuildSavedMessages";
 import { GuildArchives } from "../../data/GuildArchives";
 import { GuildCases } from "../../data/GuildCases";
+import { GuildLogs } from "../../data/GuildLogs";
+import { GuildSavedMessages } from "../../data/GuildSavedMessages";
+import { LogType } from "../../data/LogType";
+import { logger } from "../../logger";
+import { discardRegExpRunner, getRegExpRunner } from "../../regExpRunners";
+import { disableCodeBlocks } from "../../utils";
+import { CasesPlugin } from "../Cases/CasesPlugin";
+import { TimeAndDatePlugin } from "../TimeAndDate/TimeAndDatePlugin";
+import { zeppelinGuildPlugin } from "../ZeppelinPluginBlueprint";
+import { LogsChannelCreateEvt, LogsChannelDeleteEvt, LogsChannelUpdateEvt } from "./events/LogsChannelModifyEvts";
+import { LogsGuildMemberAddEvt } from "./events/LogsGuildMemberAddEvt";
+import { LogsGuildMemberRemoveEvt } from "./events/LogsGuildMemberRemoveEvt";
+import { LogsRoleCreateEvt, LogsRoleDeleteEvt, LogsRoleUpdateEvt } from "./events/LogsRoleModifyEvts";
+import {
+  LogsStageInstanceCreateEvt,
+  LogsStageInstanceDeleteEvt,
+  LogsStageInstanceUpdateEvt,
+} from "./events/LogsStageInstanceModifyEvts";
+import { LogsThreadCreateEvt, LogsThreadDeleteEvt, LogsThreadUpdateEvt } from "./events/LogsThreadModifyEvts";
+import { LogsGuildMemberUpdateEvt } from "./events/LogsUserUpdateEvts";
+import { LogsVoiceStateUpdateEvt } from "./events/LogsVoiceChannelEvts";
+import { ConfigSchema, FORMAT_NO_TIMESTAMP, LogsPluginType } from "./types";
+import { getLogMessage } from "./util/getLogMessage";
+import { log } from "./util/log";
 import { onMessageDelete } from "./util/onMessageDelete";
 import { onMessageDeleteBulk } from "./util/onMessageDeleteBulk";
 import { onMessageUpdate } from "./util/onMessageUpdate";
-import { LogsGuildMemberAddEvt } from "./events/LogsGuildMemberAddEvt";
-import { LogsGuildMemberRemoveEvt } from "./events/LogsGuildMemberRemoveEvt";
-import { LogsGuildMemberUpdateEvt } from "./events/LogsUserUpdateEvts";
-import { LogsChannelCreateEvt, LogsChannelDeleteEvt } from "./events/LogsChannelModifyEvts";
-import { LogsRoleCreateEvt, LogsRoleDeleteEvt } from "./events/LogsRoleModifyEvts";
-import { LogsVoiceJoinEvt, LogsVoiceLeaveEvt, LogsVoiceSwitchEvt } from "./events/LogsVoiceChannelEvts";
-import { log } from "./util/log";
-import { LogType } from "../../data/LogType";
-import { getLogMessage } from "./util/getLogMessage";
-import { discardRegExpRunner, getRegExpRunner } from "../../regExpRunners";
-import { disableCodeBlocks } from "../../utils";
-import { logger } from "../../logger";
-import { CasesPlugin } from "../Cases/CasesPlugin";
-import { TimeAndDatePlugin } from "../TimeAndDate/TimeAndDatePlugin";
 
 const defaultOptions: PluginOptions<LogsPluginType> = {
   config: {
@@ -64,11 +70,17 @@ export const LogsPlugin = zeppelinGuildPlugin<LogsPluginType>()({
     LogsGuildMemberUpdateEvt,
     LogsChannelCreateEvt,
     LogsChannelDeleteEvt,
+    LogsChannelUpdateEvt,
     LogsRoleCreateEvt,
     LogsRoleDeleteEvt,
-    LogsVoiceJoinEvt,
-    LogsVoiceLeaveEvt,
-    LogsVoiceSwitchEvt,
+    LogsRoleUpdateEvt,
+    LogsVoiceStateUpdateEvt,
+    LogsStageInstanceCreateEvt,
+    LogsStageInstanceDeleteEvt,
+    LogsStageInstanceUpdateEvt,
+    LogsThreadCreateEvt,
+    LogsThreadDeleteEvt,
+    LogsThreadUpdateEvt,
   ],
 
   public: {

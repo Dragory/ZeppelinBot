@@ -1,9 +1,9 @@
+import { Snowflake } from "discord.js";
 import { GuildPluginData } from "knub";
-import { MutesPluginType } from "../types";
 import { LogType } from "../../../data/LogType";
 import { resolveMember, stripObjectToScalars, UnknownUser } from "../../../utils";
-import { MemberOptions } from "eris";
 import { memberRolesLock } from "../../../utils/lockNameHelpers";
+import { MutesPluginType } from "../types";
 
 export async function clearExpiredMutes(pluginData: GuildPluginData<MutesPluginType>) {
   const expiredMutes = await pluginData.state.mutes.getExpiredMutes();
@@ -16,17 +16,17 @@ export async function clearExpiredMutes(pluginData: GuildPluginData<MutesPluginT
 
         const muteRole = pluginData.config.get().mute_role;
         if (muteRole) {
-          await member.removeRole(muteRole);
-          member.roles = member.roles.filter(r => r !== muteRole);
+          await member.roles.remove(muteRole as Snowflake);
         }
         if (mute.roles_to_restore) {
-          const memberOptions: MemberOptions = {};
-          const guildRoles = pluginData.guild.roles;
-          memberOptions.roles = Array.from(
-            new Set([...mute.roles_to_restore, ...member.roles.filter(x => x !== muteRole && guildRoles.has(x))]),
-          );
-          await member.edit(memberOptions);
-          member.roles = memberOptions.roles;
+          const guildRoles = pluginData.guild.roles.cache;
+          let newRoles: string[] = member.roles.cache.keyArray();
+          newRoles =
+            muteRole && newRoles.includes(muteRole) ? newRoles.splice(newRoles.indexOf(muteRole), 1) : newRoles;
+          for (const toRestore of mute.roles_to_restore) {
+            if (guildRoles.has(toRestore as Snowflake) && toRestore !== muteRole) newRoles.push(toRestore);
+          }
+          await member.roles.set(newRoles as Snowflake[]);
         }
 
         lock.unlock();

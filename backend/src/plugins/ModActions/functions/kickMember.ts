@@ -1,6 +1,8 @@
+import { GuildMember } from "discord.js";
 import { GuildPluginData } from "knub";
-import { IgnoredEventType, KickOptions, KickResult, ModActionsPluginType } from "../types";
-import { Member } from "eris";
+import { CaseTypes } from "../../../data/CaseTypes";
+import { LogType } from "../../../data/LogType";
+import { renderTemplate } from "../../../templateFormatter";
 import {
   createUserNotificationError,
   notifyUser,
@@ -9,19 +11,17 @@ import {
   ucfirst,
   UserNotificationResult,
 } from "../../../utils";
-import { renderTemplate } from "../../../templateFormatter";
-import { getDefaultContactMethods } from "./getDefaultContactMethods";
-import { LogType } from "../../../data/LogType";
-import { ignoreEvent } from "./ignoreEvent";
-import { CaseTypes } from "../../../data/CaseTypes";
 import { CasesPlugin } from "../../Cases/CasesPlugin";
+import { IgnoredEventType, KickOptions, KickResult, ModActionsPluginType } from "../types";
+import { getDefaultContactMethods } from "./getDefaultContactMethods";
+import { ignoreEvent } from "./ignoreEvent";
 
 /**
  * Kick the specified server member. Generates a case.
  */
 export async function kickMember(
   pluginData: GuildPluginData<ModActionsPluginType>,
-  member: Member,
+  member: GuildMember,
   reason?: string,
   kickOptions: KickOptions = {},
 ): Promise<KickResult> {
@@ -63,7 +63,7 @@ export async function kickMember(
     };
   }
 
-  const modId = kickOptions.caseArgs?.modId || pluginData.client.user.id;
+  const modId = kickOptions.caseArgs?.modId || pluginData.client.user!.id;
 
   // Create a case for this action
   const casesPlugin = pluginData.getPlugin(CasesPlugin);

@@ -1,14 +1,14 @@
-import { GuildPluginData } from "knub";
-import { MutesPluginType, UnmuteResult } from "../types";
-import { CaseArgs } from "../../Cases/types";
-import { resolveUser, stripObjectToScalars, resolveMember } from "../../../utils";
-import { memberHasMutedRole } from "./memberHasMutedRole";
+import { Snowflake } from "discord.js";
 import humanizeDuration from "humanize-duration";
-import { CasesPlugin } from "../../Cases/CasesPlugin";
+import { GuildPluginData } from "knub";
 import { CaseTypes } from "../../../data/CaseTypes";
 import { LogType } from "../../../data/LogType";
-import { MemberOptions } from "eris";
+import { resolveMember, resolveUser, stripObjectToScalars } from "../../../utils";
 import { memberRolesLock } from "../../../utils/lockNameHelpers";
+import { CasesPlugin } from "../../Cases/CasesPlugin";
+import { CaseArgs } from "../../Cases/types";
+import { MutesPluginType, UnmuteResult } from "../types";
+import { memberHasMutedRole } from "./memberHasMutedRole";
 
 export async function unmuteUser(
   pluginData: GuildPluginData<MutesPluginType>,
@@ -19,7 +19,7 @@ export async function unmuteUser(
   const existingMute = await pluginData.state.mutes.findExistingMuteForUserId(userId);
   const user = await resolveUser(pluginData.client, userId);
   const member = await resolveMember(pluginData.client, pluginData.guild, userId); // Grab the fresh member so we don't have stale role info
-  const modId = caseArgs.modId || pluginData.client.user.id;
+  const modId = caseArgs.modId || pluginData.client.user!.id;
 
   if (!existingMute && member && !memberHasMutedRole(pluginData, member)) return null;
 
@@ -36,18 +36,17 @@ export async function unmuteUser(
       const lock = await pluginData.locks.acquire(memberRolesLock(member));
 
       const muteRole = pluginData.config.get().mute_role;
-      if (muteRole && member.roles.includes(muteRole)) {
-        await member.removeRole(muteRole);
-        member.roles = member.roles.filter(r => r !== muteRole);
+      if (muteRole && member.roles.cache.has(muteRole as Snowflake)) {
+        await member.roles.remove(muteRole as Snowflake);
       }
       if (existingMute?.roles_to_restore) {
-        const memberOptions: MemberOptions = {};
-        const guildRoles = pluginData.guild.roles;
-        memberOptions.roles = Array.from(
-          new Set([...existingMute.roles_to_restore, ...member.roles.filter(x => x !== muteRole && guildRoles.has(x))]),
-        );
-        await member.edit(memberOptions);
-        member.roles = memberOptions.roles;
+        const guildRoles = pluginData.guild.roles.cache;
+        let newRoles: string[] = member.roles.cache.keyArray();
+        newRoles = muteRole && newRoles.includes(muteRole) ? newRoles.splice(newRoles.indexOf(muteRole), 1) : newRoles;
+        for (const toRestore of existingMute.roles_to_restore) {
+          if (guildRoles.has(toRestore as Snowflake) && toRestore !== muteRole) newRoles.push(toRestore);
+        }
+        await member.roles.set(newRoles as Snowflake[]);
       }
 
       lock.unlock();
@@ -85,7 +84,7 @@ export async function unmuteUser(
   });
 
   // Log the action
-  const mod = pluginData.client.users.get(modId);
+  const mod = pluginData.client.users.fetch(modId as Snowflake);
   if (unmuteTime) {
     pluginData.state.serverLogs.log(LogType.MEMBER_TIMED_UNMUTE, {
       mod: stripObjectToScalars(mod),

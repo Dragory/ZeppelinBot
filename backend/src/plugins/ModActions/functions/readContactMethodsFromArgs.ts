@@ -1,4 +1,4 @@
-import { TextChannel } from "eris";
+import { TextChannel } from "discord.js";
 import { disableUserNotificationStrings, UserNotificationMethod } from "../../../utils";
 
 export function readContactMethodsFromArgs(args: {

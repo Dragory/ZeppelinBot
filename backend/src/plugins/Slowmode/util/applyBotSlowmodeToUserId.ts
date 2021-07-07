@@ -1,9 +1,9 @@
-import { SlowmodePluginType } from "../types";
+import { GuildChannel, Permissions, Snowflake, TextChannel } from "discord.js";
 import { GuildPluginData } from "knub";
-import { Constants, GuildChannel, TextChannel } from "eris";
-import { isDiscordRESTError, stripObjectToScalars, UnknownUser } from "../../../utils";
 import { LogType } from "../../../data/LogType";
 import { logger } from "../../../logger";
+import { isDiscordAPIError, stripObjectToScalars, UnknownUser } from "../../../utils";
+import { SlowmodePluginType } from "../types";
 
 export async function applyBotSlowmodeToUserId(
   pluginData: GuildPluginData<SlowmodePluginType>,
@@ -11,16 +11,18 @@ export async function applyBotSlowmodeToUserId(
   userId: string,
 ) {
   // Deny sendMessage permission from the user. If there are existing permission overwrites, take those into account.
-  const existingOverride = channel.permissionOverwrites.get(userId);
-  const newDeniedPermissions = (existingOverride ? existingOverride.deny : 0n) | Constants.Permissions.sendMessages;
-  const newAllowedPermissions = (existingOverride ? existingOverride.allow : 0n) & ~Constants.Permissions.sendMessages;
-
+  const existingOverride = channel.permissionOverwrites.resolve(userId as Snowflake);
   try {
-    await channel.editPermission(userId, newAllowedPermissions, newDeniedPermissions, "member");
+    pluginData.state.serverLogs.ignoreLog(LogType.CHANNEL_UPDATE, channel.id, 5 * 1000);
+    if (existingOverride) {
+      await existingOverride.edit({ SEND_MESSAGES: false });
+    } else {
+      await channel.permissionOverwrites.create(userId as Snowflake, { SEND_MESSAGES: false }, { type: 1 });
+    }
   } catch (e) {
-    const user = pluginData.client.users.get(userId) || new UnknownUser({ id: userId });
+    const user = pluginData.client.users.fetch(userId as Snowflake) || new UnknownUser({ id: userId });
 
-    if (isDiscordRESTError(e) && e.code === 50013) {
+    if (isDiscordAPIError(e) && e.code === 50013) {
       logger.warn(
         `Missing permissions to apply bot slowmode to user ${userId} on channel ${channel.name} (${channel.id}) on server ${pluginData.guild.name} (${pluginData.guild.id})`,
       );

@@ -1,7 +1,8 @@
+import { GuildMember, Snowflake } from "discord.js";
 import { GuildPluginData } from "knub";
-import { ModActionsPluginType, WarnOptions, WarnResult } from "../types";
-import { Member } from "eris";
-import { getDefaultContactMethods } from "./getDefaultContactMethods";
+import { CaseTypes } from "../../../data/CaseTypes";
+import { LogType } from "../../../data/LogType";
+import { renderTemplate } from "../../../templateFormatter";
 import {
   createUserNotificationError,
   notifyUser,
@@ -10,15 +11,14 @@ import {
   ucfirst,
   UserNotificationResult,
 } from "../../../utils";
-import { waitForReaction } from "knub/dist/helpers";
+import { waitForButtonConfirm } from "../../../utils/waitForInteraction";
 import { CasesPlugin } from "../../Cases/CasesPlugin";
-import { CaseTypes } from "../../../data/CaseTypes";
-import { LogType } from "../../../data/LogType";
-import { renderTemplate } from "../../../templateFormatter";
+import { ModActionsPluginType, WarnOptions, WarnResult } from "../types";
+import { getDefaultContactMethods } from "./getDefaultContactMethods";
 
 export async function warnMember(
   pluginData: GuildPluginData<ModActionsPluginType>,
-  member: Member,
+  member: GuildMember,
   reason: string,
   warnOptions: WarnOptions = {},
 ): Promise<WarnResult> {
@@ -42,13 +42,14 @@ export async function warnMember(
   }
 
   if (!notifyResult.success) {
-    if (warnOptions.retryPromptChannel && pluginData.guild.channels.has(warnOptions.retryPromptChannel.id)) {
-      const failedMsg = await warnOptions.retryPromptChannel.createMessage(
-        "Failed to message the user. Log the warning anyway?",
+    if (warnOptions.retryPromptChannel && pluginData.guild.channels.resolve(warnOptions.retryPromptChannel.id)) {
+      const reply = await waitForButtonConfirm(
+        warnOptions.retryPromptChannel,
+        { content: "Failed to message the user. Log the warning anyway?" },
+        { confirmText: "Yes", cancelText: "No", restrictToId: warnOptions.caseArgs?.modId },
       );
-      const reply = await waitForReaction(pluginData.client, failedMsg, ["✅", "❌"]);
-      failedMsg.delete();
-      if (!reply || reply.name === "❌") {
+
+      if (!reply) {
         return {
           status: "failed",
           error: "Failed to message user",
@@ -62,7 +63,7 @@ export async function warnMember(
     }
   }
 
-  const modId = warnOptions.caseArgs?.modId ?? pluginData.client.user.id;
+  const modId = warnOptions.caseArgs?.modId ?? pluginData.client.user!.id;
 
   const casesPlugin = pluginData.getPlugin(CasesPlugin);
   const createdCase = await casesPlugin.createCase({
@@ -74,7 +75,7 @@ export async function warnMember(
     noteDetails: notifyResult.text ? [ucfirst(notifyResult.text)] : [],
   });
 
-  const mod = await resolveUser(pluginData.client, modId);
+  const mod = await pluginData.guild.members.fetch(modId as Snowflake);
   pluginData.state.serverLogs.log(LogType.MEMBER_WARN, {
     mod: stripObjectToScalars(mod),
     member: stripObjectToScalars(member, ["user", "roles"]),

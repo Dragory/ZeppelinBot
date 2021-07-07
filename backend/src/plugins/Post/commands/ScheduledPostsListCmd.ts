@@ -1,15 +1,15 @@
-import { postCmd } from "../types";
-import {
-  trimLines,
-  sorter,
-  disableCodeBlocks,
-  deactivateMentions,
-  createChunkedMessage,
-  DBDateFormat,
-} from "../../../utils";
 import humanizeDuration from "humanize-duration";
 import moment from "moment-timezone";
+import {
+  createChunkedMessage,
+  DBDateFormat,
+  deactivateMentions,
+  disableCodeBlocks,
+  sorter,
+  trimLines,
+} from "../../../utils";
 import { TimeAndDatePlugin } from "../../TimeAndDate/TimeAndDatePlugin";
+import { postCmd } from "../types";
 
 const SCHEDULED_POST_PREVIEW_TEXT_LENGTH = 50;
 
@@ -20,7 +20,7 @@ export const ScheduledPostsListCmd = postCmd({
   async run({ message: msg, pluginData }) {
     const scheduledPosts = await pluginData.state.scheduledPosts.all();
     if (scheduledPosts.length === 0) {
-      msg.channel.createMessage("No scheduled posts");
+      msg.channel.send("No scheduled posts");
       return;
     }
 

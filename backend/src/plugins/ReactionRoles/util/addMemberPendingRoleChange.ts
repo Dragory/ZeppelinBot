@@ -1,8 +1,9 @@
+import { Snowflake } from "discord.js";
 import { GuildPluginData } from "knub";
-import { ReactionRolesPluginType, RoleChangeMode, PendingMemberRoleChanges } from "../types";
-import { resolveMember } from "../../../utils";
 import { logger } from "../../../logger";
+import { resolveMember } from "../../../utils";
 import { memberRolesLock } from "../../../utils/lockNameHelpers";
+import { PendingMemberRoleChanges, ReactionRolesPluginType, RoleChangeMode } from "../types";
 
 const ROLE_CHANGE_BATCH_DEBOUNCE_TIME = 1500;
 
@@ -23,10 +24,10 @@ export async function addMemberPendingRoleChange(
 
         const member = await resolveMember(pluginData.client, pluginData.guild, memberId);
         if (member) {
-          const newRoleIds = new Set(member.roles);
+          const newRoleIds = new Set(member.roles.cache.keyArray());
           for (const change of newPendingRoleChangeObj.changes) {
-            if (change.mode === "+") newRoleIds.add(change.roleId);
-            else newRoleIds.delete(change.roleId);
+            if (change.mode === "+") newRoleIds.add(change.roleId as Snowflake);
+            else newRoleIds.delete(change.roleId as Snowflake);
           }
 
           try {
@@ -38,7 +39,7 @@ export async function addMemberPendingRoleChange(
             );
           } catch (e) {
             logger.warn(
-              `Failed to apply role changes to ${member.username}#${member.discriminator} (${member.id}): ${e.message}`,
+              `Failed to apply role changes to ${member.user.username}#${member.user.discriminator} (${member.id}): ${e.message}`,
             );
           }
         }

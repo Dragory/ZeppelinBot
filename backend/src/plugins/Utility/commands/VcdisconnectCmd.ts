@@ -1,16 +1,9 @@
-import { utilityCmd } from "../types";
+import { VoiceChannel } from "discord.js";
 import { commandTypeHelpers as ct } from "../../../commandTypes";
-import {
-  channelMentionRegex,
-  errorMessage,
-  isSnowflake,
-  simpleClosestStringMatch,
-  stripObjectToScalars,
-} from "../../../utils";
-import { canActOn, sendErrorMessage, sendSuccessMessage } from "../../../pluginUtils";
-import { VoiceChannel } from "eris";
 import { LogType } from "../../../data/LogType";
-import { resolveChannel } from "knub/dist/helpers";
+import { canActOn, sendErrorMessage, sendSuccessMessage } from "../../../pluginUtils";
+import { stripObjectToScalars } from "../../../utils";
+import { utilityCmd } from "../types";
 
 export const VcdisconnectCmd = utilityCmd({
   trigger: ["vcdisconnect", "vcdisc", "vcdc", "vckick", "vck"],
@@ -28,16 +21,14 @@ export const VcdisconnectCmd = utilityCmd({
       return;
     }
 
-    if (!args.member.voiceState || !args.member.voiceState.channelID) {
+    if (!args.member.voice || !args.member.voice.channelId) {
       sendErrorMessage(pluginData, msg.channel, "Member is not in a voice channel");
       return;
     }
-    const channel = (await resolveChannel(pluginData.guild, args.member.voiceState.channelID)) as VoiceChannel;
+    const channel = pluginData.guild.channels.cache.get(args.member.voice.channelId) as VoiceChannel;
 
     try {
-      await args.member.edit({
-        channelID: null,
-      });
+      await args.member.voice.kick();
     } catch {
       sendErrorMessage(pluginData, msg.channel, "Failed to disconnect member");
       return;

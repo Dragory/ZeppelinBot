@@ -1,11 +1,11 @@
 import { commandTypeHelpers as ct } from "../../../commandTypes";
 import { sendErrorMessage, sendSuccessMessage } from "../../../pluginUtils";
-import { slowmodeCmd } from "../types";
-import { clearBotSlowmodeFromUserId } from "../util/clearBotSlowmodeFromUserId";
 import { asSingleLine, disableInlineCode } from "../../../utils";
 import { getMissingChannelPermissions } from "../../../utils/getMissingChannelPermissions";
-import { BOT_SLOWMODE_CLEAR_PERMISSIONS } from "../requiredPermissions";
 import { missingPermissionError } from "../../../utils/missingPermissionError";
+import { BOT_SLOWMODE_CLEAR_PERMISSIONS } from "../requiredPermissions";
+import { slowmodeCmd } from "../types";
+import { clearBotSlowmodeFromUserId } from "../util/clearBotSlowmodeFromUserId";
 
 export const SlowmodeClearCmd = slowmodeCmd({
   trigger: ["slowmode clear", "slowmode c"],
@@ -25,7 +25,7 @@ export const SlowmodeClearCmd = slowmodeCmd({
       return;
     }
 
-    const me = pluginData.guild.members.get(pluginData.client.user.id)!;
+    const me = pluginData.guild.members.cache.get(pluginData.client.user!.id)!;
     const missingPermissions = getMissingChannelPermissions(me, args.channel, BOT_SLOWMODE_CLEAR_PERMISSIONS);
     if (missingPermissions) {
       sendErrorMessage(

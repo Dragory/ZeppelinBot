@@ -1,14 +1,14 @@
-import { IgnoredEventType, modActionsEvt } from "../types";
-import { isEventIgnored } from "../functions/isEventIgnored";
-import { clearIgnoredEvents } from "../functions/clearIgnoredEvents";
-import { Constants as ErisConstants, User } from "eris";
-import { CasesPlugin } from "../../Cases/CasesPlugin";
+import { GuildAuditLogs, User } from "discord.js";
 import { CaseTypes } from "../../../data/CaseTypes";
-import { logger } from "../../../logger";
+import { Case } from "../../../data/entities/Case";
 import { LogType } from "../../../data/LogType";
+import { logger } from "../../../logger";
 import { resolveUser, stripObjectToScalars, UnknownUser } from "../../../utils";
 import { safeFindRelevantAuditLogEntry } from "../../../utils/safeFindRelevantAuditLogEntry";
-import { Case } from "../../../data/entities/Case";
+import { CasesPlugin } from "../../Cases/CasesPlugin";
+import { clearIgnoredEvents } from "../functions/clearIgnoredEvents";
+import { isEventIgnored } from "../functions/isEventIgnored";
+import { IgnoredEventType, modActionsEvt } from "../types";
 
 /**
  * Create a KICK case automatically when a user is kicked manually.
@@ -24,7 +24,7 @@ export const CreateKickCaseOnManualKickEvt = modActionsEvt({
 
     const kickAuditLogEntry = await safeFindRelevantAuditLogEntry(
       pluginData,
-      ErisConstants.AuditLogActions.MEMBER_KICK,
+      GuildAuditLogs.Actions.MEMBER_KICK as number,
       member.id,
     );
 
@@ -40,7 +40,7 @@ export const CreateKickCaseOnManualKickEvt = modActionsEvt({
           `Tried to create duplicate case for audit log entry ${kickAuditLogEntry.id}, existing case id ${createdCase.id}`,
         );
       } else {
-        mod = await resolveUser(pluginData.client, kickAuditLogEntry.user.id);
+        mod = await resolveUser(pluginData.client, kickAuditLogEntry.executor!.id);
 
         const config = mod instanceof UnknownUser ? pluginData.config.get() : await pluginData.config.getForUser(mod);
 
@@ -48,7 +48,7 @@ export const CreateKickCaseOnManualKickEvt = modActionsEvt({
           const casesPlugin = pluginData.getPlugin(CasesPlugin);
           createdCase = await casesPlugin.createCase({
             userId: member.id,
-            modId: kickAuditLogEntry.user.id,
+            modId: mod.id,
             type: CaseTypes.Kick,
             auditLogId: kickAuditLogEntry.id,
             reason: kickAuditLogEntry.reason || undefined,

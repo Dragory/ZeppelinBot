@@ -1,14 +1,14 @@
-import { utilityCmd, UtilityPluginType } from "../types";
-import { commandTypeHelpers as ct } from "../../../commandTypes";
-import { DAYS, getInviteCodesInString, noop, SECONDS, stripObjectToScalars } from "../../../utils";
-import { getBaseUrl, sendErrorMessage, sendSuccessMessage } from "../../../pluginUtils";
-import { Message, TextChannel, User } from "eris";
-import moment from "moment-timezone";
+import { Message, Snowflake, TextChannel, User } from "discord.js";
 import { GuildPluginData } from "knub";
+import moment from "moment-timezone";
+import { commandTypeHelpers as ct } from "../../../commandTypes";
 import { SavedMessage } from "../../../data/entities/SavedMessage";
 import { LogType } from "../../../data/LogType";
-import { allowTimeout } from "../../../RegExpRunner";
 import { ModActionsPlugin } from "../../../plugins/ModActions/ModActionsPlugin";
+import { getBaseUrl, sendErrorMessage, sendSuccessMessage } from "../../../pluginUtils";
+import { allowTimeout } from "../../../RegExpRunner";
+import { DAYS, getInviteCodesInString, noop, SECONDS, stripObjectToScalars } from "../../../utils";
+import { utilityCmd, UtilityPluginType } from "../types";
 
 const MAX_CLEAN_COUNT = 150;
 const MAX_CLEAN_TIME = 1 * DAYS;
@@ -25,14 +25,14 @@ async function cleanMessages(
 
   // Delete & archive in ID order
   savedMessages = Array.from(savedMessages).sort((a, b) => (a.id > b.id ? 1 : -1));
-  const idsToDelete = savedMessages.map(m => m.id);
+  const idsToDelete = savedMessages.map(m => m.id) as Snowflake[];
 
   // Make sure the deletions aren't double logged
   idsToDelete.forEach(id => pluginData.state.logs.ignoreLog(LogType.MESSAGE_DELETE, id));
   pluginData.state.logs.ignoreLog(LogType.MESSAGE_DELETE_BULK, idsToDelete[0]);
 
   // Actually delete the messages
-  await pluginData.client.deleteMessages(channel.id, idsToDelete);
+  channel.bulkDelete(idsToDelete);
   await pluginData.state.savedMessages.markBulkAsDeleted(idsToDelete);
 
   // Create an archive
@@ -53,9 +53,9 @@ async function cleanMessages(
 const opts = {
   user: ct.userId({ option: true, shortcut: "u" }),
   channel: ct.channelId({ option: true, shortcut: "c" }),
-  bots: ct.switchOption({ shortcut: "b" }),
-  "delete-pins": ct.switchOption({ shortcut: "p" }),
-  "has-invites": ct.switchOption({ shortcut: "i" }),
+  bots: ct.switchOption({ def: false, shortcut: "b" }),
+  "delete-pins": ct.switchOption({ def: false, shortcut: "p" }),
+  "has-invites": ct.switchOption({ def: false, shortcut: "i" }),
   match: ct.regex({ option: true, shortcut: "m" }),
   "to-id": ct.anyId({ option: true, shortcut: "id" }),
 };
@@ -75,7 +75,7 @@ export const CleanCmd = utilityCmd({
     },
     {
       count: ct.number(),
-      update: ct.switchOption({ shortcut: "up" }),
+      update: ct.switchOption({ def: false, shortcut: "up" }),
 
       ...opts,
     },
@@ -87,7 +87,7 @@ export const CleanCmd = utilityCmd({
       return;
     }
 
-    const targetChannel = args.channel ? pluginData.guild.channels.get(args.channel) : msg.channel;
+    const targetChannel = args.channel ? pluginData.guild.channels.cache.get(args.channel as Snowflake) : msg.channel;
     if (!targetChannel || !(targetChannel instanceof TextChannel)) {
       sendErrorMessage(pluginData, msg.channel, `Invalid channel specified`);
       return;
@@ -98,7 +98,7 @@ export const CleanCmd = utilityCmd({
         userId: msg.author.id,
         member: msg.member,
         channelId: targetChannel.id,
-        categoryId: targetChannel.parentID,
+        categoryId: targetChannel.parentId,
       });
       if (configForTargetChannel.can_clean !== true) {
         sendErrorMessage(pluginData, msg.channel, `Missing permissions to use clean on that channel`);
@@ -106,26 +106,35 @@ export const CleanCmd = utilityCmd({
       }
     }
 
-    const cleaningMessage = msg.channel.createMessage("Cleaning...");
+    const cleaningMessage = msg.channel.send("Cleaning...");
 
     const messagesToClean: SavedMessage[] = [];
     let beforeId = msg.id;
-    const timeCutoff = msg.timestamp - MAX_CLEAN_TIME;
+    const timeCutoff = msg.createdTimestamp - MAX_CLEAN_TIME;
     const upToMsgId = args["to-id"];
     let foundId = false;
 
     const deletePins = args["delete-pins"] != null ? args["delete-pins"] : false;
     let pins: Message[] = [];
     if (!deletePins) {
-      pins = await msg.channel.getPins();
+      pins = (await msg.channel.messages.fetchPinned()).array();
     }
 
     while (messagesToClean.length < args.count) {
-      const potentialMessagesToClean = await pluginData.state.savedMessages.getLatestByChannelBeforeId(
-        targetChannel.id,
-        beforeId,
-        args.count,
-      );
+      const potentialMessages = await targetChannel.messages.fetch({
+        before: beforeId,
+        limit: args.count,
+      });
+      if (potentialMessages.size === 0) break;
+
+      const existingStored = await pluginData.state.savedMessages.getMultiple(potentialMessages.keyArray());
+      const alreadyStored = existingStored.map(stored => stored.id);
+      const messagesToStore = potentialMessages
+        .array()
+        .filter(potentialMsg => !alreadyStored.includes(potentialMsg.id));
+      await pluginData.state.savedMessages.createFromMessages(messagesToStore);
+
+      const potentialMessagesToClean = await pluginData.state.savedMessages.getMultiple(potentialMessages.keyArray());
       if (potentialMessagesToClean.length === 0) break;
 
       const filtered: SavedMessage[] = [];
@@ -150,12 +159,9 @@ export const CleanCmd = utilityCmd({
       const withoutOverflow = filtered.slice(0, remaining);
       messagesToClean.push(...withoutOverflow);
 
-      beforeId = potentialMessagesToClean[potentialMessagesToClean.length - 1].id;
+      beforeId = potentialMessages.lastKey()!;
 
-      if (
-        foundId ||
-        moment.utc(potentialMessagesToClean[potentialMessagesToClean.length - 1].posted_at).valueOf() < timeCutoff
-      ) {
+      if (foundId || moment.utc(potentialMessages.last()!.createdTimestamp).valueOf() < timeCutoff) {
         break;
       }
     }

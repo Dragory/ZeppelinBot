@@ -1,7 +1,8 @@
-import { mutesEvt } from "../types";
+import { Snowflake } from "discord.js";
 import { LogType } from "../../../data/LogType";
 import { stripObjectToScalars } from "../../../utils";
 import { memberRolesLock } from "../../../utils/lockNameHelpers";
+import { mutesEvt } from "../types";
 
 /**
  * Reapply active mutes on join
@@ -15,7 +16,7 @@ export const ReapplyActiveMuteOnJoinEvt = mutesEvt({
 
       if (muteRole) {
         const memberRoleLock = await pluginData.locks.acquire(memberRolesLock(member));
-        await member.addRole(muteRole);
+        await member.roles.add(muteRole as Snowflake);
         memberRoleLock.unlock();
       }
 
